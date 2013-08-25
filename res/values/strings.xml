@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Расписание СГТУ</string>
+    <string name="title_activity_spec">Специальности</string>
+    <string name="monday">Понедельник</string>
+    <string name="tuesday">Вторник</string>
+    <string name="wednesday">Среда</string>
+    <string name="thursday">Четверг</string>
+    <string name="friday">Пятница</string>
+    <string name="saturday">Суббота</string>
+    <string name="title_activity_faculty">Факультеты</string>
+    <string name="menu_save_title">Сохранить</string>
+    <string name="menu_other_title">Другое расписание</string>
+    <string name="menu_update_title">Обновить</string>
+    <string name="menu_about_title">О программе</string>
+    <string name="about_author">Автор: Ушаков Дмитрий</string>
+    <string name="about_version">Версия: 1.0</string>
+    <string name="title_activity_about">О программе</string>
+    <string name="internet_fail_title">Ошибка подключения</string>
+    <string name="internet_fail_text">Проверьте интернет-соединение.</string>
+    <string name="internet_fail_ok">Хорошо</string>
+    <string name="gotohome_item">Моё расписание</string>
+    <string name="lecturers">Преподаватели</string>
+    <string name="tomorrow_day">(завтра)</string>
+    <string name="today_day">(сегодня)</string>
+
+</resources>
