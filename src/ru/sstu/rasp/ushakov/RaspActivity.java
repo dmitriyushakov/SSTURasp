@@ -172,7 +172,7 @@ public class RaspActivity extends Activity {
 			registerForContextMenu(view);
 			setContentView(view);
 		}else{
-			view.drawBitmaps(spec);
+			view.setSpeciality(spec);
 			view.invalidate();
 		}
 	}

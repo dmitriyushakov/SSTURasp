@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.content.*;
 import android.graphics.*;
 import android.os.*;
-import android.util.Log;
 import android.view.*;
 
 import java.util.*;
@@ -17,8 +16,7 @@ public class RaspView extends View{
 	private Paint paint;
 	private int mode;
 	private Speciality spec;
-	private static Bitmap evenDaysBmp[];
-	private static Bitmap nevenDaysBmp[];
+	private BitmapContainer bmpContainer;
 	private static Thread redrawth;
 	private int xpos;
 	private int ypos;
@@ -56,37 +54,17 @@ public class RaspView extends View{
 		xpos=restx*getWidth();
 		ypos=resty*getHeight();
 	}
-	public void drawBitmaps(Speciality spec){
-		reallocateBitmaps(getWidth(),getHeight());
-		for(int i=0;i<6;i++){
-			Day day=spec.getDay(i,false);
-			drawBitmap(day,nevenDaysBmp[i]);
-			
-			day=spec.getDay(i,true);
-			drawBitmap(day,evenDaysBmp[i]);
-		}
+	public void setSpeciality(Speciality spec){
+		this.spec=spec;
+		bmpContainer.clean();
 	}
-	private void allocateBitmaps(int width,int height){
-		System.gc();
-		if(evenDaysBmp==null){
-			evenDaysBmp=new Bitmap[6];
-			for(int i=0;i<6;i++)evenDaysBmp[i]=Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888);
-		}
-		if(nevenDaysBmp==null){
-			nevenDaysBmp=new Bitmap[6];
-			for(int i=0;i<6;i++)nevenDaysBmp[i]=Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888);
-		}
-	}
-	private void reallocateBitmaps(int width,int height){
-		if(evenDaysBmp==null||nevenDaysBmp==null){
-			allocateBitmaps(width,height);
-		}else{
-			Bitmap bmp=evenDaysBmp[0];
-			if(bmp.getHeight()!=height||bmp.getWidth()!=width){
-				deleteBitmaps();
-				allocateBitmaps(width,height);
-			}
-		}
+	private Bitmap getImage(int daynum,boolean even){
+		if(bmpContainer.needRedraw(daynum,even)){
+			Bitmap bmp=bmpContainer.getBitmap(daynum,even);
+			Day day=spec.getDay(daynum,even);
+			drawBitmap(day,bmp);
+			return bmp;
+		}else return bmpContainer.getBitmap(daynum,even);
 	}
 	private void drawBitmap(Day day,Bitmap bmp){
 		drawBitmap(day,bmp,null);
@@ -186,6 +164,7 @@ public class RaspView extends View{
 	}
 	public RaspView(Context context) {
 		super(context);
+		bmpContainer=new BitmapContainer();
 	}
 	private String getDayName(int day){
 		int id=0;
@@ -215,6 +194,8 @@ public class RaspView extends View{
 			xpos=dayOfWeek()*getWidth();
 		}
 		isTouched=false;
+		bmpContainer.setSize(getWidth(),getHeight());
+		
 		if(redrawth!=null&&redrawth.isAlive()){
 			try{
 				redrawth.join();
@@ -225,7 +206,6 @@ public class RaspView extends View{
 				try{
 					Thread.sleep(20);
 				}catch(InterruptedException e){};
-				drawBitmaps(spec);
 				drawed=true;
 				postInvalidate();
 			}
@@ -281,26 +261,24 @@ public class RaspView extends View{
 		if(ypos%getHeight()!=0){
 			int xindex=xpos/getWidth();
 			if(ypos<getHeight()){
-				canv.drawBitmap(nevenDaysBmp[xindex],0,-ypos,paint);
-				canv.drawBitmap(evenDaysBmp[xindex],0,getHeight()-ypos,paint);
+				canv.drawBitmap(getImage(xindex,false),0,-ypos,paint);
+				canv.drawBitmap(getImage(xindex,true),0,getHeight()-ypos,paint);
 			}else if(ypos>getHeight()){
-				canv.drawBitmap(evenDaysBmp[xindex],0,getHeight()-ypos,paint);
-				canv.drawBitmap(nevenDaysBmp[xindex],0,getHeight()*2-ypos,paint);
+				canv.drawBitmap(getImage(xindex,true),0,getHeight()-ypos,paint);
+				canv.drawBitmap(getImage(xindex,false),0,getHeight()*2-ypos,paint);
 			}
 		}else if(xpos%getWidth()!=0){
-			Bitmap daysBmp[]=(ypos==0)?nevenDaysBmp:evenDaysBmp;
-			Bitmap odaysBmp=(ypos==0)?evenDaysBmp[0]:nevenDaysBmp[0];
 			int xindex=xpos/getWidth();
 			int firstx=xindex*getWidth()-xpos;
-			canv.drawBitmap(daysBmp[xindex],firstx,0,paint);
+			canv.drawBitmap(getImage(xindex,ypos!=0),firstx,0,paint);
 			if(xindex==5){
-				canv.drawBitmap(odaysBmp,firstx+getWidth(),0,paint);
+				canv.drawBitmap(getImage(0,ypos==0),firstx+getWidth(),0,paint);
 			}else{
-				canv.drawBitmap(daysBmp[xindex+1],firstx+getWidth(),0,paint);
+				canv.drawBitmap(getImage(xindex+1,ypos!=0),firstx+getWidth(),0,paint);
 			}
 		}else{
 			int xindex=xpos/getWidth();
-			canv.drawBitmap(ypos==0?nevenDaysBmp[xindex]:evenDaysBmp[xindex],0,0,paint);
+			canv.drawBitmap(getImage(xindex,ypos!=0),0,0,paint);
 		}
 	}
 	private void setPos(int x,int y){
@@ -449,17 +427,6 @@ public class RaspView extends View{
 				}
 			}
 			setPos(startx,(int)(starty-kdy));
-		}
-	}
-	private void deleteBitmaps(){
-		drawed=false;
-		if(evenDaysBmp!=null&&nevenDaysBmp!=null){
-			for(int i=0;i<6;i++){
-				evenDaysBmp[i].recycle();
-				nevenDaysBmp[i].recycle();
-			}
-			evenDaysBmp=null;
-			nevenDaysBmp=null;
 		}
 	}
 }
