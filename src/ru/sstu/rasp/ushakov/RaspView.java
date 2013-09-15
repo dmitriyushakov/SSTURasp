@@ -178,7 +178,7 @@ public class RaspView extends View{
 		if(day==Day.SATURDAY)id=R.string.saturday;
 		return getResources().getString(id);
 	}
-	private int dayOfWeek(){
+	private static int dayOfWeek(){
 		Calendar calendar=new GregorianCalendar();
 		int preResult=calendar.get(Calendar.DAY_OF_WEEK);
 		if(preResult==Calendar.SUNDAY)return 0;
