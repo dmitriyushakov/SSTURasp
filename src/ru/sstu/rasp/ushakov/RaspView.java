@@ -7,6 +7,8 @@ import android.graphics.*;
 import android.os.*;
 import android.view.*;
 
+import android.util.Log;
+
 import java.util.*;
 
 public class RaspView extends View{
@@ -17,7 +19,6 @@ public class RaspView extends View{
 	private int mode;
 	private Speciality spec;
 	private BitmapContainer bmpContainer;
-	private static Thread redrawth;
 	private int xpos;
 	private int ypos;
 	private boolean drawed;
@@ -59,17 +60,18 @@ public class RaspView extends View{
 		bmpContainer.clean();
 	}
 	private Bitmap getImage(int daynum,boolean even){
+		Bitmap bmp=bmpContainer.getBitmap(daynum,even);
 		if(bmpContainer.needRedraw(daynum,even)){
-			Bitmap bmp=bmpContainer.getBitmap(daynum,even);
 			Day day=spec.getDay(daynum,even);
 			drawBitmap(day,bmp);
-			return bmp;
-		}else return bmpContainer.getBitmap(daynum,even);
+		}
+		return bmp;
 	}
 	private void drawBitmap(Day day,Bitmap bmp){
 		drawBitmap(day,bmp,null);
 	}
 	private void drawBitmap(Day day,Canvas canv){
+		Log.i("RaspView","Draw on canvas directly");
 		drawBitmap(day,null,canv);
 	}
 	private void drawBitmap(Day day,Bitmap bmp,Canvas canv){
@@ -193,26 +195,10 @@ public class RaspView extends View{
 			ypos=spec.isEven()?getHeight():0;
 			xpos=dayOfWeek()*getWidth();
 		}
-		isTouched=false;
-		bmpContainer.setSize(getWidth(),getHeight());
-		
-		if(redrawth!=null&&redrawth.isAlive()){
-			try{
-				redrawth.join();
-			}catch(InterruptedException e){};
-		}
-		Runnable runnable=new Runnable(){
-			public void run(){
-				try{
-					Thread.sleep(20);
-				}catch(InterruptedException e){};
-				drawed=true;
-				postInvalidate();
-			}
-		};
-		redrawth=new Thread(runnable);
-		redrawth.start();
 		invalidate();
+		isTouched=false;
+		drawed=false;
+		bmpContainer.setSize(getWidth(),getHeight());
 	}
 	protected void onSizeChanged(int w,int h,int ow,int oh){
 		postInit();
@@ -220,8 +206,8 @@ public class RaspView extends View{
 	@SuppressLint("HandlerLeak")
 	public void init(Speciality spec){
 		this.spec=spec;
-		drawed=false;
 		
+		drawed=false;
 		menuhandl=new Handler(){
 			public void handleMessage(Message msg){
 				showContextMenu();
@@ -256,6 +242,7 @@ public class RaspView extends View{
 		if(!drawed){
 			Day day=spec.getDay(xpos/getWidth(),ypos!=0);
 			drawBitmap(day,canv);
+			drawed=true;
 			return;
 		}
 		if(ypos%getHeight()!=0){
@@ -282,7 +269,6 @@ public class RaspView extends View{
 		}
 	}
 	private void setPos(int x,int y){
-		if(!drawed)return;
 		while(x>=6*getWidth()){
 			x-=getWidth()*6;
 		}
@@ -344,8 +330,8 @@ public class RaspView extends View{
 		int dx=x-lockx;
 		int dy=y-locky;
 		if(mode==STAY_MODE){
-			if(Math.abs(dx)>15)mode=MOVE_X_MODE;
-			if(Math.abs(dy)>15)mode=MOVE_Y_MODE;
+			if(Math.abs(dx)>30)mode=MOVE_X_MODE;
+			if(Math.abs(dy)>30)mode=MOVE_Y_MODE;
 		}
 		if(mode==MOVE_X_MODE){
 			int nxpos=startx-dx;

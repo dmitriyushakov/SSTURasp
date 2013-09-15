@@ -25,20 +25,23 @@ public class BitmapContainer {
 			secondBmp=Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888);
 			secondUse=false;
 			firstUse=false;
-			firstToRedraw=true;
-			secondToRedraw=true;
 		}
-		//System.gc();
+		firstToRedraw=true;
+		secondToRedraw=true;
 	}
 	public void clean(){
 		firstUse=false;
 		secondUse=false;
+		firstToRedraw=true;
+		secondToRedraw=true;
 	}
 	public Bitmap getBitmap(int daynum,boolean even){
 		if(firstUse&&firstX==daynum&&firstEven==even){
+			secondSwitch=false;
 			return firstBmp;
 		}
 		if(secondUse&&secondX==daynum&&secondEven==even){
+			secondSwitch=true;
 			return secondBmp;
 		}
 		secondSwitch=!secondSwitch;
@@ -76,14 +79,10 @@ public class BitmapContainer {
 		firstUse=false;
 		firstX=-1;
 		firstEven=false;
-		if(firstBmp!=null)firstBmp.recycle();
-		firstBmp=null;
+		firstToRedraw=true;
 		secondUse=false;
 		secondX=-1;
 		secondEven=false;
-		if(secondBmp!=null)secondBmp.recycle();
-		secondBmp=null;
-		firstToRedraw=true;
 		secondToRedraw=true;
 	}
 }
