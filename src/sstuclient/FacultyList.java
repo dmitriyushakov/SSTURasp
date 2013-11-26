@@ -8,8 +8,7 @@ public class FacultyList {
 		tags=new ArrayList<FacultyTag>();
 		tags.add(new FacultyTag(11,"МФПИТ"));
 		tags.add(new FacultyTag(1,"АМФ"));
-		tags.add(new FacultyTag(3,"МСФ"));
-		tags.add(new FacultyTag(5,"ФЭТиП"));
+		tags.add(new FacultyTag(18,"ИнЭТМ"));
 		tags.add(new FacultyTag(6,"ЭФ"));
 		tags.add(new FacultyTag(7,"ФЭС"));
 		tags.add(new FacultyTag(8,"ФЭМ"));
