@@ -93,6 +93,11 @@ public class RaspActivity extends Activity {
 		MenuInflater inflanter=getMenuInflater();
 		inflanter.inflate(menusave?R.menu.rasp_save:R.menu.rasp,menu);
 	}
+	public boolean onCreateOptionsMenu(Menu menu){
+		MenuInflater inflanter=getMenuInflater();
+		inflanter.inflate(menusave?R.menu.rasp_save:R.menu.rasp,menu);
+		return true;
+	}
 	private void showInternetFail(){
 		_showfail=true;
 		DialogInterface.OnClickListener listener=new DialogInterface.OnClickListener() {
