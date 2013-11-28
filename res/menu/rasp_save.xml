@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@+id/other" android:title="@string/menu_other_title" android:onClick="showOthers"></item>
-    <item android:id="@+id/save" android:title="@string/menu_save_title" android:onClick="saveRasp"></item>
-    <item android:id="@+id/gotohome" android:title="@string/gotohome_item" android:onClick="gotoHome"></item>
-    <item android:id="@+id/about" android:title="@string/menu_about_title" android:onClick="showAbout"></item>
+    <item android:id="@+id/other" android:title="@string/menu_other_title"></item>
+    <item android:id="@+id/save" android:title="@string/menu_save_title"></item>
+    <item android:id="@+id/gotohome" android:title="@string/gotohome_item"></item>
+    <item android:id="@+id/about" android:title="@string/menu_about_title"></item>
 
 </menu>

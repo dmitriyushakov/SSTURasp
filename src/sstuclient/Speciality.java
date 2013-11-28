@@ -272,7 +272,7 @@ public class Speciality {
 			
 			while(true){
 				String startTimeStr=getter.getString();
-				if(startTimeStr.isEmpty())break;
+				if(startTimeStr.length()==0)break;
 				Time startTime=Time.parse(startTimeStr);
 				Time endTime=Time.parse(getter.getString());
 				String auditorium=getter.getString();

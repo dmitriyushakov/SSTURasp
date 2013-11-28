@@ -1,8 +1,10 @@
 package ru.sstu.rasp.ushakov;
 
 import java.io.IOException;
+
 import sstuclient.*;
 import android.os.*;
+import android.util.Log;
 import android.view.*;
 import android.view.ContextMenu.*;
 import android.annotation.SuppressLint;
@@ -21,7 +23,8 @@ public class RaspActivity extends Activity {
 	RaspView view;
 	private void gotoFacultySelector(){
 		Intent i=new Intent(this,FacultyActivity.class);
-		i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
+		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		Log.i("RaspActivity", "Try to start Faculty Activity");
 		startActivity(i);
 	}
 	@SuppressLint("HandlerLeak")
@@ -93,10 +96,34 @@ public class RaspActivity extends Activity {
 		MenuInflater inflanter=getMenuInflater();
 		inflanter.inflate(menusave?R.menu.rasp_save:R.menu.rasp,menu);
 	}
+	public boolean onContextItemSelected(MenuItem item){
+		return onOptionsItemSelected(item);
+	}
 	public boolean onCreateOptionsMenu(Menu menu){
 		MenuInflater inflanter=getMenuInflater();
 		inflanter.inflate(menusave?R.menu.rasp_save:R.menu.rasp,menu);
 		return true;
+	}
+	public boolean onOptionsItemSelected(MenuItem item){
+		switch(item.getItemId()){
+		case R.id.other:
+			showOthers();
+			return true;
+		case R.id.save:
+			saveRasp();
+			return true;
+		case R.id.update:
+			updateRasp();
+			return true;
+		case R.id.about:
+			showAbout();
+			return true;
+		case R.id.gotohome:
+			gotoHome();
+			return true;
+		default:
+			return false;
+		}
 	}
 	private void showInternetFail(){
 		_showfail=true;
@@ -111,18 +138,16 @@ public class RaspActivity extends Activity {
 		ErrorDialog.internetFailDialog(this,listener).show();
 	}
 	
-	public boolean showOthers(MenuItem item){
+	public void showOthers(){
 		Intent i=new Intent(this,FacultyActivity.class);
 		startActivity(i);
-		return true;
 	}
-	public boolean saveRasp(MenuItem item){
+	public void saveRasp(){
 		spec.save(getFilesDir().getAbsolutePath());
 		menusave=false;
-		return true;
 	}
 	@SuppressLint("HandlerLeak")
-	public boolean updateRasp(MenuItem item){
+	public void updateRasp(){
 		if(updhandler==null)updhandler=new Handler(){
 			public void handleMessage(Message msg){
 				onSpecGet();
@@ -148,20 +173,16 @@ public class RaspActivity extends Activity {
 		};
 		t=new Thread(runnable);
 		t.start();
-		
-		return true;
 	}
-	public boolean showAbout(MenuItem item){
+	public void showAbout(){
 		Intent intent=new Intent(this,AboutActivity.class);
 		startActivity(intent);
-		return true;
 	}
-	public boolean gotoHome(MenuItem item){
+	public void gotoHome(){
 		spec=Speciality.restore(getFilesDir().getAbsolutePath());
 		view.init(spec);
 		view.postInit();
 		menusave=false;
-		return true;
 	}
 	
 	protected void onSaveInstanceState(Bundle state){
