@@ -192,8 +192,21 @@ public class RaspView extends View{
 			xpos=restx*getWidth();
 			ypos=resty*getHeight();
 		}else{
-			ypos=spec.isEven()?getHeight():0;
-			xpos=dayOfWeek()*getWidth();
+			boolean even=spec.isEven();
+			int nday=dayOfWeek();
+			
+			Day day=spec.getDay(nday,even);
+			Time lastTime=day.last().getEnd();
+			if(Time.now().isLater(lastTime)){
+				nday++;
+				if(nday==6){
+					nday=0;
+					even=!even;
+				}
+			}
+			
+			ypos=even?getHeight():0;
+			xpos=nday*getWidth();
 		}
 		invalidate();
 		isTouched=false;

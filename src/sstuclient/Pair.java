@@ -30,4 +30,7 @@ public class Pair {
 	public Time getEnd(){
 		return end;
 	}
+	public boolean isLater(Pair other){
+		return other.end.isLater(end);
+	}
 }

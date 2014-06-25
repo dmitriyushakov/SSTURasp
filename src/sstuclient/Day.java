@@ -56,6 +56,13 @@ public class Day {
 	public Pair at(int i){
 		return pairs.get(i);
 	}
+	public Pair last(){
+		Pair pair=null;
+		for(Pair cpair:pairs){
+			if(pair==null||pair.isLater(cpair))pair=cpair;
+		}
+		return pair;
+	}
 	public boolean isEven(){
 		return even;
 	}
