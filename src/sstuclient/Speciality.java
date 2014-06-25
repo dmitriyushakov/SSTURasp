@@ -175,7 +175,7 @@ public class Speciality {
 	}
 	
 	public static Speciality getLecturer(String url) throws IOException{
-		Speciality lect=getAnything(url,lectWeekPattern);
+		Speciality lect=getAnything(url.replace(" ",""),lectWeekPattern);
 		lect.lecturer=true;
 		return lect;
 	}

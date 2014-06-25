@@ -76,6 +76,7 @@ public class RaspActivity extends Activity {
 						if(Thread.interrupted())return;
 						handler.sendEmptyMessage(0);
 					}catch(IOException e){
+						e.printStackTrace();
 						handler.sendEmptyMessage(1);
 					}
 				}
