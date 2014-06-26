@@ -196,8 +196,9 @@ public class RaspView extends View{
 			int nday=dayOfWeek();
 			
 			Day day=spec.getDay(nday,even);
-			Time lastTime=day.last().getEnd();
-			if(Time.now().isLater(lastTime)){
+			Pair pair=day.last();
+			Time lastTime=pair==null?null:pair.getEnd();
+			if(lastTime==null||Time.now().isLater(lastTime)){
 				nday++;
 				if(nday==6){
 					nday=0;
