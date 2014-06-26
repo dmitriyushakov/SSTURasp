@@ -50,7 +50,7 @@ public class RaspActivity extends Activity {
 		
 		if(savedInstanceState!=null){
 			spec=(Speciality)ObjectBox.get(savedInstanceState.getInt("specid"));
-			if(spec==null)showInternetFail();
+			if(spec==null)finish();
 			else{
 				onSpecGet();
 				menusave=savedInstanceState.getBoolean("menusave",false);
