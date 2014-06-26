@@ -49,7 +49,7 @@ public class RaspActivity extends Activity {
 		};
 		
 		if(savedInstanceState!=null){
-			spec=Speciality.restoreFromBundle(savedInstanceState);
+			spec=(Speciality)ObjectBox.get(savedInstanceState.getInt("specid"));
 			if(spec==null)showInternetFail();
 			else{
 				onSpecGet();
@@ -187,8 +187,8 @@ public class RaspActivity extends Activity {
 	}
 	
 	protected void onSaveInstanceState(Bundle state){
-		if(spec!=null)spec.putToBundle(state);
-		if(spec!=null)view.saveInstance(state);
+		if(spec!=null)state.putInt("specid",ObjectBox.set(spec));
+		if(view!=null)view.saveInstance(state);
 		state.putBoolean("showfail",_showfail);
 		state.putBoolean("menusave",menusave);
 	}

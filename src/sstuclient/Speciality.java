@@ -4,8 +4,6 @@ import java.util.*;
 import java.util.regex.*;
 import java.io.*;
 
-import android.os.*;
-
 public class Speciality {
 	private static String SAVE_FILE="sstu_save";
 	private static String stdWeekPattern="<div align=\"center\"><A href=\"[^\"]*\"><b>([^<]*)</b></A><br><font style=\"FONT-FAMILY: Arial\"size=\"2\">([^<]*)<br></font><font size=\"2\"><A href=\"[^\"]*\">([^<]*)</A></font><br></div>";
@@ -62,80 +60,6 @@ public class Speciality {
 		}
 		
 		return days;
-	}
-	
-	public void putToBundle(Bundle bundle){
-		bundle.putString("specUrl", url);
-		bundle.putString("specName", name);
-		bundle.putBoolean("specLecturer",lecturer);
-		bundle.putBoolean("specCEven", changeEven);
-		for(int i=0;i<6;i++){
-			Day evenDay=evenDays[i];
-			String edArr[]=new String[evenDay.size()*5];
-			for(int j=0;j<evenDay.size();j++){
-				Pair pair=evenDay.at(j);
-				edArr[j*5]=pair.getStart().toString();
-				edArr[j*5+1]=pair.getEnd().toString();
-				edArr[j*5+2]=pair.getAuditorium();
-				edArr[j*5+3]=pair.getSubject();
-				edArr[j*5+4]=pair.getLecturer();
-			}
-			bundle.putStringArray("specEvenDay"+i,edArr);
-			
-			Day nevenDay=nevenDays[i];
-			String nedArr[]=new String[nevenDay.size()*5];
-			for(int j=0;j<nevenDay.size();j++){
-				Pair pair=nevenDay.at(j);
-				nedArr[j*5]=pair.getStart().toString();
-				nedArr[j*5+1]=pair.getEnd().toString();
-				nedArr[j*5+2]=pair.getAuditorium();
-				nedArr[j*5+3]=pair.getSubject();
-				nedArr[j*5+4]=pair.getLecturer();
-			}
-			bundle.putStringArray("specNEvenDay"+i,nedArr);
-		}
-	}
-	public static Speciality restoreFromBundle(Bundle bundle){
-		Speciality spec=new Speciality();
-		
-		spec.url=bundle.getString("specUrl");
-		if(spec.url==null)return null;
-		spec.name=bundle.getString("specName");
-		spec.changeEven=bundle.getBoolean("specCEven");
-		spec.lecturer=bundle.getBoolean("specLecturer");
-		spec.evenDays=new Day[6];
-		spec.nevenDays=new Day[6];
-		for(int i=0;i<6;i++){
-			Day evenDay=new Day(i,true);
-			String edArr[]=bundle.getStringArray("specEvenDay"+i);
-			for(int j=0;j<edArr.length/5;j++){
-				Time start=Time.parse(edArr[j*5]);
-				Time end=Time.parse(edArr[j*5+1]);
-				String aud=edArr[j*5+2];
-				String subj=edArr[j*5+3];
-				String lect=edArr[j*5+4];
-				
-				Pair pair=new Pair(aud,subj,lect,start,end);
-				evenDay.add(pair);
-			}
-			spec.evenDays[i]=evenDay;
-
-			Day nevenDay=new Day(i,false);
-			String nedArr[]=bundle.getStringArray("specNEvenDay"+i);
-			for(int j=0;j<nedArr.length/5;j++){
-				Time start=Time.parse(nedArr[j*5]);
-				Time end=Time.parse(nedArr[j*5+1]);
-				String aud=nedArr[j*5+2];
-				String subj=nedArr[j*5+3];
-				String lect=nedArr[j*5+4];
-				
-				Pair pair=new Pair(aud,subj,lect,start,end);
-				nevenDay.add(pair);
-			}
-			spec.nevenDays[i]=nevenDay;
-		}
-		
-		return spec;
 	}
 	
 	private static boolean evenWeek(){
