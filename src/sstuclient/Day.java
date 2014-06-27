@@ -2,13 +2,16 @@ package sstuclient;
 
 import java.util.*;
 
-public class Day {
-	public static int MONDAY=0;
-	public static int TUESDAY=1;
-	public static int WEDNESDAY=2;
-	public static int THURSDAY=3;
-	public static int FRIDAY=4;
-	public static int SATURDAY=5;
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Day implements Parcelable{
+	public static final int MONDAY=0;
+	public static final int TUESDAY=1;
+	public static final int WEDNESDAY=2;
+	public static final int THURSDAY=3;
+	public static final int FRIDAY=4;
+	public static final int SATURDAY=5;
 	private int day;
 	private List<Pair> pairs;
 	private boolean even;
@@ -18,6 +21,14 @@ public class Day {
 		even=e;
 		pairs=new ArrayList<Pair>();
 	}
+	
+	public Day(Parcel parcel){
+		day=parcel.readInt();
+		even=parcel.readByte()!=0;
+		pairs=new ArrayList<Pair>();
+		parcel.readTypedList(pairs,Pair.CREATOR);
+	}
+	
 	public boolean isToday(boolean iseven){
 		Calendar calendar=new GregorianCalendar();
 		int cday=calendar.get(Calendar.DAY_OF_WEEK);
@@ -66,4 +77,25 @@ public class Day {
 	public boolean isEven(){
 		return even;
 	}
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeInt(day);
+		dest.writeByte((byte)(even?1:0));
+		dest.writeTypedList(pairs);
+	}
+	
+	public static final Parcelable.Creator<Day> CREATOR=new Parcelable.Creator<Day>(){
+		@Override
+		public Day createFromParcel(Parcel source) {
+			return new Day(source);
+		}
+		@Override
+		public Day[] newArray(int size) {
+			return new Day[size];
+		}
+	};
 }

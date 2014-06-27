@@ -4,10 +4,13 @@ import java.util.*;
 import java.util.regex.*;
 import java.io.*;
 
-public class Speciality {
-	private static String SAVE_FILE="sstu_save";
-	private static String stdWeekPattern="<div align=\"center\"><A href=\"[^\"]*\"><b>([^<]*)</b></A><br><font style=\"FONT-FAMILY: Arial\"size=\"2\">([^<]*)<br></font><font size=\"2\"><A href=\"[^\"]*\">([^<]*)</A></font><br></div>";
-	private static String lectWeekPattern="<div align=\"center\"><A href=\"[^\"]*\"> <b>([^<]*)</b></A><br><font style=\"FONT-FAMILY: Arial\"size=\"2\">([^<]*)<br>([^<]*)</font><br>.*</div>";
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Speciality implements Parcelable{
+	private static final String SAVE_FILE="sstu_save";
+	private static final String stdWeekPattern="<div align=\"center\"><A href=\"[^\"]*\"><b>([^<]*)</b></A><br><font style=\"FONT-FAMILY: Arial\"size=\"2\">([^<]*)<br></font><font size=\"2\"><A href=\"[^\"]*\">([^<]*)</A></font><br></div>";
+	private static final String lectWeekPattern="<div align=\"center\"><A href=\"[^\"]*\"> <b>([^<]*)</b></A><br><font style=\"FONT-FAMILY: Arial\"size=\"2\">([^<]*)<br>([^<]*)</font><br>.*</div>";
 	private String url;
 	private boolean lecturer;
 	private boolean changeEven;
@@ -60,6 +63,18 @@ public class Speciality {
 		}
 		
 		return days;
+	}
+	
+	public Speciality(Parcel parcel){
+		name=parcel.readString();
+		url=parcel.readString();
+		byte fl=parcel.readByte();
+		lecturer=(fl&1)==1;
+		changeEven=(fl&2)==2;
+		nevenDays=new Day[6];
+		evenDays=new Day[6];
+		parcel.readTypedArray(nevenDays,Day.CREATOR);
+		parcel.readTypedArray(evenDays,Day.CREATOR);
 	}
 	
 	private static boolean evenWeek(){
@@ -213,4 +228,32 @@ public class Speciality {
 		
 		return spec;
 	}
+
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeString(name);
+		dest.writeString(url);
+		byte fl=(byte)((lecturer?1:0)+(changeEven?2:0));
+		dest.writeByte(fl);
+		dest.writeTypedArray(nevenDays,flags);
+		dest.writeTypedArray(evenDays,flags);
+	}
+	
+	public static final Parcelable.Creator<Speciality> CREATOR=new Parcelable.Creator<Speciality>(){
+		@Override
+		public Speciality createFromParcel(Parcel source) {
+			return new Speciality(source);
+		}
+
+		@Override
+		public Speciality[] newArray(int size) {
+			return new Speciality[size];
+		}
+		
+	};
 }

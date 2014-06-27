@@ -3,7 +3,10 @@ package sstuclient;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-public class Time {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Time implements Parcelable{
 	private int hour;
 	private int minute;
 	@SuppressWarnings("unused")
@@ -12,6 +15,10 @@ public class Time {
 	public Time(int h,int m){
 		hour=h;
 		minute=m;
+	}
+	public Time(Parcel parcel){
+		hour=parcel.readInt();
+		minute=parcel.readInt();
 	}
 	public static Time parse(String str){
 		String vals[]=null;
@@ -33,4 +40,26 @@ public class Time {
 		int minute=calendar.get(Calendar.MINUTE);
 		return new Time(hour,minute);
 	}
+
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeInt(hour);
+		dest.writeInt(minute);
+	}
+	
+	public static final Parcelable.Creator<Time> CREATOR=new Parcelable.Creator<Time>(){
+		@Override
+		public Time createFromParcel(Parcel parcel) {
+			return new Time(parcel);
+		}
+		@Override
+		public Time[] newArray(int size) {
+			return new Time[size];
+		}
+	};
 }

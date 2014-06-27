@@ -49,7 +49,7 @@ public class RaspActivity extends Activity {
 		};
 		
 		if(savedInstanceState!=null){
-			spec=(Speciality)ObjectBox.get(savedInstanceState.getInt("specid"));
+			spec=savedInstanceState.getParcelable("spec");
 			if(spec==null)finish();
 			else{
 				onSpecGet();
@@ -187,7 +187,7 @@ public class RaspActivity extends Activity {
 	}
 	
 	protected void onSaveInstanceState(Bundle state){
-		if(spec!=null)state.putInt("specid",ObjectBox.set(spec));
+		if(spec!=null)state.putParcelable("spec",spec);
 		if(view!=null)view.saveInstance(state);
 		state.putBoolean("showfail",_showfail);
 		state.putBoolean("menusave",menusave);
