@@ -3,7 +3,9 @@ package sstuclient;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class Pair implements Parcelable{
+import org.json.*;
+
+public class Pair implements Parcelable,JSONConvertable{
 	private String auditorium;
 	private String subject;
 	private String lecturer;
@@ -68,4 +70,34 @@ public class Pair implements Parcelable{
 			return new Pair[size];
 		}
 	};
+	public JSONObject toJSON(){
+		JSONObject obj=new JSONObject();
+		
+		try {
+			obj.put("auditorium",auditorium);
+			obj.put("subject",subject);
+			obj.put("lecturer",lecturer);
+			obj.put("start",start.toJSON());
+			obj.put("end",end.toJSON());
+			
+			return obj;
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	public static Pair fromJSON(JSONObject obj){
+		try {
+			return new Pair(
+					obj.getString("auditorium"),
+					obj.getString("subject"),
+					obj.getString("lecturer"),
+					Time.fromJSON(obj.getJSONObject("start")),
+					Time.fromJSON(obj.getJSONObject("end")));
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 }

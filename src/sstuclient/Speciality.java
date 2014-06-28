@@ -7,8 +7,10 @@ import java.io.*;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class Speciality implements Parcelable{
-	private static final String SAVE_FILE="sstu_save";
+import org.json.*;
+
+public class Speciality implements Parcelable,JSONConvertable{
+	private static final String SAVE_FILE="sstu_save.json";
 	private static final String stdWeekPattern="<div align=\"center\"><A href=\"[^\"]*\"><b>([^<]*)</b></A><br><font style=\"FONT-FAMILY: Arial\"size=\"2\">([^<]*)<br></font><font size=\"2\"><A href=\"[^\"]*\">([^<]*)</A></font><br></div>";
 	private static final String lectWeekPattern="<div align=\"center\"><A href=\"[^\"]*\"> <b>([^<]*)</b></A><br><font style=\"FONT-FAMILY: Arial\"size=\"2\">([^<]*)<br>([^<]*)</font><br>.*</div>";
 	private String url;
@@ -17,6 +19,7 @@ public class Speciality implements Parcelable{
 	private Day nevenDays[];
 	private Day evenDays[];
 	private String name;
+	
 	private Speciality(){};
 	
 	private static Day[] getWeek(String content,boolean even,String pattern){
@@ -143,90 +146,104 @@ public class Speciality implements Parcelable{
 		File file=new File(folder+SAVE_FILE);
 		if(file.exists())file.delete();
 		
+		Writer writer=null;
 		try{
-			Writer writer=new FileWriter(file);
-			
-			writer.append(url+"\n"+name+"\n");
-			writer.append((changeEven?"1":"0")+" "+(lecturer?"1":"0")+"\n\n");
-			
-			
-			for(int i=0;i<6;i++){
-				writer.append("0 "+i+"\n");
-				
-				Day day=nevenDays[i];
-				for(int j=0;j<day.size();j++){
-					Pair pair=day.at(j);
-					writer.append(pair.getStart().toString()+"\n");
-					writer.append(pair.getEnd().toString()+"\n");
-					writer.append(pair.getAuditorium()+"\n");
-					writer.append(pair.getSubject()+"\n");
-					writer.append(pair.getLecturer()+"\n");
-				}
-				writer.append("\n");
-			}
-			
-			for(int i=0;i<6;i++){
-				writer.append("1 "+i+"\n");
-				
-				Day day=evenDays[i];
-				for(int j=0;j<day.size();j++){
-					Pair pair=day.at(j);
-					writer.append(pair.getStart().toString()+"\n");
-					writer.append(pair.getEnd().toString()+"\n");
-					writer.append(pair.getAuditorium()+"\n");
-					writer.append(pair.getSubject()+"\n");
-					writer.append(pair.getLecturer()+"\n");
-				}
-				writer.append("\n");
-			}
-			
-			writer.close();
+			writer=new FileWriter(file);
+			writer.append(toJSON().toString());
 		}catch(IOException e){
+			e.printStackTrace();
+		}finally{
+			if(writer!=null)
+				try {
+					writer.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 		}
+	}
+	public JSONObject toJSON(){
+		JSONObject obj=new JSONObject();
+		try {
+			obj.put("name",name);
+			obj.put("url",url);
+			obj.put("isLecturer",lecturer);
+			obj.put("changeEven",changeEven);
+			
+			JSONArray evenArr=new JSONArray();
+			for(Day day:evenDays){
+				evenArr.put(day.toJSON());
+			}
+			obj.put("evenDays",evenArr);
+
+			JSONArray nevenArr=new JSONArray();
+			for(Day day:nevenDays){
+				nevenArr.put(day.toJSON());
+			}
+			obj.put("nevenDays",nevenArr);
+			
+			return obj;
+		} catch (JSONException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		return obj;
+	}
+	public static Speciality fromJSON(JSONObject obj){
+		try {
+			Speciality spec=new Speciality();
+			spec.evenDays=new Day[6];
+			spec.nevenDays=new Day[6];
+			spec.name=obj.getString("name");
+			spec.url=obj.getString("url");
+			spec.lecturer=obj.getBoolean("isLecturer");
+			spec.changeEven=obj.getBoolean("changeEven");
+			
+			JSONArray evenArr=obj.getJSONArray("evenDays");
+			JSONArray nevenArr=obj.getJSONArray("nevenDays");
+			for(int i=0;i<6;i++){
+				spec.evenDays[i]=Day.fromJSON(evenArr.getJSONObject(i));
+				spec.nevenDays[i]=Day.fromJSON(nevenArr.getJSONObject(i));
+			}
+			
+			return spec;
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 	public String getUrl(){
 		return url;
 	}
 	public static Speciality restore(String folder){
-		Speciality spec=new Speciality();
-		spec.evenDays=new Day[6];
-		spec.nevenDays=new Day[6];
-
-		FileGetter getter=new FileGetter(folder+SAVE_FILE);
+		File file=new File(folder+SAVE_FILE);
 		
-		spec.url=getter.getString();
-		spec.name=getter.getString();
-		String boolInfo[]=getter.getString().split(" ");
-		spec.changeEven=!boolInfo[0].equals("0");
-		spec.lecturer=!boolInfo[1].equals("0");
-		getter.getString();
-		
-		while(getter.haveStrings()){
-			String daystring=getter.getString();
-			String vals[]=daystring.split(" ");
-			boolean even=(!vals[0].equals("0"));
-			int num=Integer.parseInt(vals[1]);
+		InputStream in=null;
+		try {
+			byte buf[]=new byte[(int)file.length()];
 			
-			Day day=new Day(num,even);
+			in=new FileInputStream(file);
+			in.read(buf);
 			
-			while(true){
-				String startTimeStr=getter.getString();
-				if(startTimeStr.length()==0)break;
-				Time startTime=Time.parse(startTimeStr);
-				Time endTime=Time.parse(getter.getString());
-				String auditorium=getter.getString();
-				String subject=getter.getString();
-				String lecturer=getter.getString();
+			String str=new String(buf);
+			JSONTokener tokener=new JSONTokener(str);
+			JSONObject obj=(JSONObject)tokener.nextValue();
+			
+			return Speciality.fromJSON(obj);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch(JSONException e) {
+			e.printStackTrace();
+		} finally {
+			try{
+				if(in!=null)in.close();
+			}catch(IOException e){
 				
-				Pair pair=new Pair(auditorium,subject,lecturer,startTime,endTime);
-				day.add(pair);
 			}
-			
-			if(even)spec.evenDays[num]=day;
-			else spec.nevenDays[num]=day;
 		}
 		
-		return spec;
+		return null;
 	}
 
 	@Override

@@ -5,7 +5,9 @@ import java.util.*;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class Day implements Parcelable{
+import org.json.*;
+
+public class Day implements Parcelable,JSONConvertable{
 	public static final int MONDAY=0;
 	public static final int TUESDAY=1;
 	public static final int WEDNESDAY=2;
@@ -98,4 +100,41 @@ public class Day implements Parcelable{
 			return new Day[size];
 		}
 	};
+	public JSONObject toJSON(){
+		JSONObject obj=new JSONObject();
+		
+		try {
+			obj.put("day",day);
+			obj.put("even",even);
+			
+			JSONArray array=new JSONArray();
+			for(Pair pair:pairs){
+				array.put(pair.toJSON());
+			}
+			
+			obj.put("list",array);
+			
+			return obj;
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	public static Day fromJSON(JSONObject obj){
+		try {
+			Day day=new Day(obj.getInt("day"),obj.getBoolean("even"));
+			JSONArray array=obj.getJSONArray("list");
+			for(int i=0;i<array.length();i++){
+				JSONObject pairobj=array.getJSONObject(i);
+				day.add(Pair.fromJSON(pairobj));
+			}
+			return day;
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
+		
+		return null;
+	}
 }

@@ -6,7 +6,9 @@ import java.util.GregorianCalendar;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class Time implements Parcelable{
+import org.json.*;
+
+public class Time implements Parcelable, JSONConvertable{
 	private int hour;
 	private int minute;
 	@SuppressWarnings("unused")
@@ -62,4 +64,29 @@ public class Time implements Parcelable{
 			return new Time[size];
 		}
 	};
+	
+	public JSONObject toJSON(){
+		JSONObject obj=new JSONObject();
+		
+		try {
+			obj.put("hour",hour);
+			obj.put("minute",minute);
+			
+			return obj;
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
+		
+		return null;
+	}
+	
+	public static Time fromJSON(JSONObject obj){
+		try {
+			return new Time(obj.getInt("hour"),obj.getInt("minute"));
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 }
