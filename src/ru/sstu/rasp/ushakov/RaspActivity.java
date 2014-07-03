@@ -20,6 +20,7 @@ public class RaspActivity extends Activity {
 	private Thread t;
 	private boolean _showfail;
 	private boolean lecturer;
+	private boolean auditory;
 	RaspView view;
 	private void gotoFacultySelector(){
 		Intent i=new Intent(this,FacultyActivity.class);
@@ -35,8 +36,10 @@ public class RaspActivity extends Activity {
 		Bundle extras=getIntent().getExtras();
 		if(extras!=null){
 			lecturer=extras.getBoolean("lecturer");
+			auditory=extras.getBoolean("auditory");
 		}else{
 			lecturer=false;
+			auditory=false;
 		}
 
 		handler=new Handler(){
@@ -66,6 +69,8 @@ public class RaspActivity extends Activity {
 					try{
 						if(lecturer){
 							spec=Speciality.getLecturer(url);
+						}else if(auditory){
+							spec=Speciality.getAuditory(url);
 						}else{
 							spec=Speciality.getSpeciality(url);
 						}
@@ -160,12 +165,12 @@ public class RaspActivity extends Activity {
 				try{
 					if(spec.isLecturer()){
 						spec=Speciality.getLecturer(spec.getUrl());
+					}else if(spec.isAuditory()){
+						spec=Speciality.getAuditory(spec.getUrl());
 					}else{
 						spec=Speciality.getSpeciality(spec.getUrl());
 					}
-					if(Thread.interrupted())return;
 					spec.save(getFilesDir().getAbsolutePath());
-					if(Thread.interrupted())return;
 					updhandler.sendEmptyMessage(0);
 				}catch(IOException e){
 					handler.sendEmptyMessage(1);

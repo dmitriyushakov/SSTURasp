@@ -13,8 +13,10 @@ public class Speciality implements Parcelable,JSONConvertable{
 	private static final String SAVE_FILE="sstu_save.json";
 	private static final String stdWeekPattern="<div align=\"center\"><A href=\"[^\"]*\"><b>([^<]*)</b></A><br><font style=\"FONT-FAMILY: Arial\"size=\"2\">([^<]*)<br></font><font size=\"2\"><A href=\"[^\"]*\">([^<]*)</A></font><br></div>";
 	private static final String lectWeekPattern="<div align=\"center\"><A href=\"[^\"]*\"> <b>([^<]*)</b></A><br><font style=\"FONT-FAMILY: Arial\"size=\"2\">([^<]*)<br>([^<]*)</font><br>.*</div>";
+	private static final String audWeekPattern="<div align=\"center\"><font style=\"FONT-FAMILY: Arial\"size=\"2\">([^<]*)<br><font size=\"2\"><A href=\"[^\"]*\">([^<]*)</A></font><br>([^<]*)</font><br></div>";
 	private String url;
 	private boolean lecturer;
+	private boolean auditory;
 	private boolean changeEven;
 	private Day nevenDays[];
 	private Day evenDays[];
@@ -49,9 +51,18 @@ public class Speciality implements Parcelable,JSONConvertable{
 				Matcher cellmatcher=cellpattern.matcher(cells[j]);
 				
 				if(cellmatcher.find()){
-					String aud=cellmatcher.group(1).replace("//","/");
-					String subj=cellmatcher.group(2);
-					String lect=cellmatcher.group(3);
+					String aud=null;
+					String subj=null;
+					String lect=null;
+					if(pattern==audWeekPattern){
+						aud=cellmatcher.group(3);
+						subj=cellmatcher.group(1);
+						lect=cellmatcher.group(2);
+					}else{
+						aud=cellmatcher.group(1).replace("//","/");
+						subj=cellmatcher.group(2);
+						lect=cellmatcher.group(3);
+					}
 					
 					int prevlen=-1;
 					while(prevlen!=subj.length()){
@@ -73,7 +84,8 @@ public class Speciality implements Parcelable,JSONConvertable{
 		url=parcel.readString();
 		byte fl=parcel.readByte();
 		lecturer=(fl&1)==1;
-		changeEven=(fl&2)==2;
+		auditory=(fl&2)==2;
+		changeEven=(fl&4)==4;
 		nevenDays=new Day[6];
 		evenDays=new Day[6];
 		parcel.readTypedArray(nevenDays,Day.CREATOR);
@@ -122,6 +134,12 @@ public class Speciality implements Parcelable,JSONConvertable{
 		return lect;
 	}
 	
+	public static Speciality getAuditory(String url) throws IOException{
+		Speciality aud=getAnything(url,audWeekPattern);
+		aud.auditory=true;
+		return aud;
+	}
+	
 	public boolean isEven(){
 		boolean even=evenWeek();
 		if(changeEven)even=!even;
@@ -130,6 +148,9 @@ public class Speciality implements Parcelable,JSONConvertable{
 	}
 	public boolean isLecturer(){
 		return lecturer;
+	}
+	public boolean isAuditory(){
+		return auditory;
 	}
 	public String getName(){
 		return name;
@@ -167,6 +188,7 @@ public class Speciality implements Parcelable,JSONConvertable{
 			obj.put("name",name);
 			obj.put("url",url);
 			obj.put("isLecturer",lecturer);
+			obj.put("isAuditory",auditory);
 			obj.put("changeEven",changeEven);
 			
 			JSONArray evenArr=new JSONArray();
@@ -196,6 +218,7 @@ public class Speciality implements Parcelable,JSONConvertable{
 			spec.name=obj.getString("name");
 			spec.url=obj.getString("url");
 			spec.lecturer=obj.getBoolean("isLecturer");
+			spec.auditory=obj.getBoolean("isAuditory");
 			spec.changeEven=obj.getBoolean("changeEven");
 			
 			JSONArray evenArr=obj.getJSONArray("evenDays");
@@ -255,7 +278,7 @@ public class Speciality implements Parcelable,JSONConvertable{
 	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeString(name);
 		dest.writeString(url);
-		byte fl=(byte)((lecturer?1:0)+(changeEven?2:0));
+		byte fl=(byte)((lecturer?1:0)+(auditory?2:0)+(changeEven?4:0));
 		dest.writeByte(fl);
 		dest.writeTypedArray(nevenDays,flags);
 		dest.writeTypedArray(evenDays,flags);

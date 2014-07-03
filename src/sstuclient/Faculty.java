@@ -3,12 +3,14 @@ package sstuclient;
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.*;
+import java.net.URLEncoder;
 
 import android.os.Bundle;
 
 public class Faculty {
 	private static String stdListPattern="<td><a href=\"([^\"]*)\">([^<]*)</a></td>";
 	private static String lectListPattern="<a href=\"([^\"]*)\"><font size=\"2\" color=\"#000099\">([^<]*)</font></a>";
+	private static String audListPattern="<a href=\"htmlViewRaspAud\\.aspx\\?AUD=([/\\w]*)&KORP=([0-9]{1,2})&OLD=0\">";
 	private String name;
 	private SpecialityTag tags[];
 	private Faculty(){};
@@ -18,6 +20,30 @@ public class Faculty {
 	}
 	static public Faculty getLecturers() throws IOException{
 		return getAnything("http://rasp.sstu.ru/SelPrep.aspx?OLD=0",lectListPattern);
+	}
+	static public Faculty getAuditories() throws IOException{
+		Faculty faculty=new Faculty();
+		
+		String content=HttpGetter.get("http://rasp.sstu.ru/SelAud.aspx?OLD=0");
+		
+		Pattern pattern=Pattern.compile(audListPattern);
+		Matcher matcher=pattern.matcher(content);
+		List<SpecialityTag> taglist=new ArrayList<SpecialityTag>();
+		
+		while(matcher.find()){
+			String num=matcher.group(1);
+			String building=matcher.group(2);
+			String turl="http://rasp.sstu.ru/htmlViewRaspAud.aspx?AUD="+URLEncoder.encode(num,"UTF-8")+"&KORP="+building+"&OLD=0";
+			String tname=building+num;
+			SpecialityTag tag=new SpecialityTag(tname,turl);
+			taglist.add(tag);
+		}
+		
+		SpecialityTag tagarray[]=new SpecialityTag[taglist.size()];
+		for(int i=0;i<taglist.size();i++)tagarray[i]=taglist.get(i);
+		faculty.tags=tagarray;
+		
+		return faculty;
 	}
 	
 	static private Faculty getAnything(String url,String patt) throws IOException{

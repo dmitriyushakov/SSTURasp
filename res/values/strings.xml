@@ -22,6 +22,7 @@
     <string name="internet_fail_ok">Хорошо</string>
     <string name="gotohome_item">Моё расписание</string>
     <string name="lecturers">Преподаватели</string>
+    <string name="auds">Аудитории</string>
     <string name="tomorrow_day">(завтра)</string>
     <string name="today_day">(сегодня)</string>
 

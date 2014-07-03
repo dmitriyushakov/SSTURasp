@@ -13,11 +13,12 @@ public class FacultyActivity extends ListActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		String lines[]=new String[FacultyList.size()+1];
+		String lines[]=new String[FacultyList.size()+2];
 		for(int i=0;i<FacultyList.size();i++)
 			lines[i]=FacultyList.getTag(i).getName();
 		
-		lines[lines.length-1]=getResources().getString(R.string.lecturers);
+		lines[lines.length-2]=getResources().getString(R.string.lecturers);
+		lines[lines.length-1]=getResources().getString(R.string.auds);
 		
 		adapter=new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,lines);
 		
@@ -28,6 +29,8 @@ public class FacultyActivity extends ListActivity {
 		Intent intent=new Intent(this,SpecActivity.class);
 		if(pos==FacultyList.size()){
 			intent.putExtra("toLecturers",true);
+		}else if(pos==FacultyList.size()+1){
+			intent.putExtra("toAuditory",true);
 		}else{
 			intent.putExtra("facnum",FacultyList.getTag(pos).getNum());
 		}

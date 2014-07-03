@@ -12,8 +12,9 @@ import sstuclient.*;
 public class SpecActivity extends ListActivity {
 	ArrayAdapter<String> adapter;
 	private Faculty fac;
-	boolean toLecturers;
-	String num;
+	private boolean toLecturers;
+	private boolean toAuditory;
+	private String num;
 	private Handler handler;
 	@SuppressLint("HandlerLeak")
 	protected void onCreate(Bundle savedInstanceState) {
@@ -22,7 +23,9 @@ public class SpecActivity extends ListActivity {
 		Bundle extras=getIntent().getExtras();
 		num=extras.getString("facnum");
 		toLecturers=extras.getBoolean("toLecturers",false);
+		toAuditory=extras.getBoolean("toAuditory",false);
 		if(toLecturers)this.setTitle(R.string.lecturers);
+		if(toAuditory)this.setTitle(R.string.auds);
 		
 		if(savedInstanceState!=null){
 			fac=Faculty.restoreFromBundle(savedInstanceState);
@@ -43,11 +46,14 @@ public class SpecActivity extends ListActivity {
 					try{
 						if(toLecturers){
 							fac=Faculty.getLecturers();
+						}else if(toAuditory){
+							fac=Faculty.getAuditories();
 						}else{
 							fac=Faculty.getFaculty(num);
 						}
 						handler.sendEmptyMessage(0);
 					}catch(IOException e){
+						e.printStackTrace();
 						handler.sendEmptyMessage(1);
 					}
 				}
@@ -58,11 +64,6 @@ public class SpecActivity extends ListActivity {
 		}
 	}
 	private void onGetData(Faculty fac){
-		if(fac.size()==0){
-			showInternetFail();
-			fac=null;
-			return;
-		}
 		String specList[]=new String[fac.size()];
 		
 		for(int i=0;i<fac.size();i++){
@@ -86,6 +87,7 @@ public class SpecActivity extends ListActivity {
 		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
 		intent.putExtra("url",url);
 		intent.putExtra("lecturer",toLecturers);
+		intent.putExtra("auditory",toAuditory);
 		startActivity(intent);
 	}
 	protected void onSaveInstanceState(Bundle state){
