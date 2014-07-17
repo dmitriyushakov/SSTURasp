@@ -15,7 +15,7 @@
     <string name="menu_update_title">Обновить</string>
     <string name="menu_about_title">О программе</string>
     <string name="about_author">Автор: Ушаков Дмитрий</string>
-    <string name="about_version">Версия: 1.2.1</string>
+    <string name="about_version">Версия: 2.0</string>
     <string name="title_activity_about">О программе</string>
     <string name="internet_fail_title">Ошибка подключения</string>
     <string name="internet_fail_text">Проверьте интернет-соединение.</string>
