@@ -11,12 +11,8 @@ import org.json.*;
 
 public class Speciality implements Parcelable,JSONConvertable{
 	private static final String SAVE_FILE="sstu_save.json";
-	private static final String stdWeekPattern="<div align=\"center\"><A href=\"[^\"]*\"><b>([^<]*)</b></A><br><font style=\"FONT-FAMILY: Arial\"size=\"2\">([^<]*)<br></font><font size=\"2\"><A href=\"[^\"]*\">([^<]*)</A></font><br></div>";
-	private static final String lectWeekPattern="<div align=\"center\"><A href=\"[^\"]*\"> <b>([^<]*)</b></A><br><font style=\"FONT-FAMILY: Arial\"size=\"2\">([^<]*)<br>([^<]*)</font><br>.*</div>";
-	private static final String audWeekPattern="<div align=\"center\"><font style=\"FONT-FAMILY: Arial\"size=\"2\">([^<]*)<br><font size=\"2\"><A href=\"[^\"]*\">([^<]*)</A></font><br>([^<]*)</font><br></div>";
+	private static final String stdWeekPattern="<div class=\"small\">(<div class=\"aud\">([^<]*)</div>)?<div class=\"subject-?m?\">([^<]*)(</div><div class=\"type\">([^<]*)</div><div class=\"(teacher|group)\">([^<]*)</div></div>)?";
 	private String url;
-	private boolean lecturer;
-	private boolean auditory;
 	private boolean changeEven;
 	private Day nevenDays[];
 	private Day evenDays[];
@@ -24,68 +20,54 @@ public class Speciality implements Parcelable,JSONConvertable{
 	
 	private Speciality(){};
 	
-	private static Day[] getWeek(String content,boolean even,String pattern){
+	private static Day[] getWeek(String content,boolean even){
 		Day[] days=new Day[6];
 		for(int i=0;i<6;i++){
 			days[i]=new Day(i,even);
 		}
 		
-		content=content.substring(0,content.indexOf("</tbody>"));
+		String strings[]=content.split("<div class=\"rasp-table-col\">");
 		
-		String strings[]=content.split("<tr>");
-		
-		for(int i=2;i<strings.length;i++){
-			String row=strings[i];
-			String cells[]=row.split("</td>");
+		for(int i=1;i<strings.length;i++){
+			String col=strings[i];
+			String cells[]=col.split("<div class=\"rasp-table-row  \">");
 			
-			Pattern timepattern=Pattern.compile("<b>([0-9\\.]*)<br>([0-9\\.]*)");
-			Matcher timematcher=timepattern.matcher(cells[0]);
-			timematcher.find();
-			
-			Time starttime=Time.parse(timematcher.group(1));
-			Time endtime=Time.parse(timematcher.group(2));
-			
-			for(int j=1;j<cells.length-1;j++){
+			for(int j=1;j<=cells.length-1;j++){
+				String cell=cells[j];
 				
-				Pattern cellpattern=Pattern.compile(pattern);
-				Matcher cellmatcher=cellpattern.matcher(cells[j]);
+				String timesStr=cell.substring(0,cell.indexOf("<div class=\"rasp-table-inner-cell\">"));
+
+				Pattern timepattern=Pattern.compile("([0-9]{1,2}:[0-9]{2})");
+				Matcher timematcher=timepattern.matcher(timesStr);
+				
+				timematcher.find();
+				Time starttime=Time.parse(timematcher.group(1));
+
+				timematcher.find();
+				Time endtime=Time.parse(timematcher.group(1));
+				
+				Pattern cellpattern=Pattern.compile(stdWeekPattern);
+				Matcher cellmatcher=cellpattern.matcher(cell);
 				
 				if(cellmatcher.find()){
-					String aud=null;
-					String subj=null;
-					String lect=null;
-					if(pattern==audWeekPattern){
-						aud=cellmatcher.group(3);
-						subj=cellmatcher.group(1);
-						lect=cellmatcher.group(2);
-					}else{
-						aud=cellmatcher.group(1).replace("//","/");
-						subj=cellmatcher.group(2);
-						lect=cellmatcher.group(3);
-					}
-					
-					int prevlen=-1;
-					while(prevlen!=subj.length()){
-						prevlen=subj.length();
-						subj=subj.replace("  ", " ");
-					}
+					String aud=cellmatcher.group(2);
+					String subj=cellmatcher.group(3)+" "+cellmatcher.group(5);
+					String lect=cellmatcher.group(7);
+					if(aud==null)aud="";
+					if(lect==null)lect="";
 					
 					Pair pair=new Pair(aud,subj,lect,starttime,endtime);
-					days[j-1].add(pair);
+					days[i-1].add(pair);
 				}
 			}
 		}
-		
 		return days;
 	}
 	
 	public Speciality(Parcel parcel){
 		name=parcel.readString();
 		url=parcel.readString();
-		byte fl=parcel.readByte();
-		lecturer=(fl&1)==1;
-		auditory=(fl&2)==2;
-		changeEven=(fl&4)==4;
+		changeEven=parcel.readByte()!=0;
 		nevenDays=new Day[6];
 		evenDays=new Day[6];
 		parcel.readTypedArray(nevenDays,Day.CREATOR);
@@ -99,45 +81,35 @@ public class Speciality implements Parcelable,JSONConvertable{
 		return even;
 	}
 	
-	private static Speciality getAnything(String urlval,String pattern) throws IOException{
+	public static Speciality getSpeciality(String url) throws IOException{
 		Speciality spec=new Speciality();
 		
-		String content=HttpGetter.get(urlval);
+		String content=HttpGetter.get(url);
 		
 		String name=content.substring(content.indexOf("<title>")+7, content.indexOf("</title>"));
 		name=name.trim();
 		
-		boolean siteEven=content.indexOf("IMAGE/chet.jpg")!=-1;
+		boolean siteEven=content.indexOf("nechet")==-1;
 		spec.changeEven=(siteEven!=evenWeek());
+		
+		// Calendars different. Foreign calendar begining from sunday. Our from monday.
 		if((new GregorianCalendar()).get(Calendar.DAY_OF_WEEK)==Calendar.SUNDAY)
 			spec.changeEven=!spec.changeEven;
+		
 		spec.name=name;
-		spec.url=urlval;
+		spec.url=url;
 		
-		String strs[]=content.split("<table align=\"center\" border=\"0\" cellpadding=\"2\" cellspacing=\"1\"  bordercolor=\"#ff3300\" bgcolor=\"#000000\">");
+		String strs[]=content.split("<span class=\"week_number\">2</span>");
 		
-		spec.nevenDays=getWeek(strs[1],false,pattern);
-		spec.evenDays=getWeek(strs[2],true,pattern);
+		if(siteEven){
+			spec.nevenDays=getWeek(strs[0],false);
+			spec.evenDays=getWeek(strs[1],true);
+		}else{
+			spec.evenDays=getWeek(strs[0],false);
+			spec.nevenDays=getWeek(strs[1],true);
+		}
 		
 		return spec;
-	}
-	
-	public static Speciality getSpeciality(String url) throws IOException{
-		Speciality spec=getAnything(url,stdWeekPattern);;
-		spec.lecturer=false;
-		return spec;
-	}
-	
-	public static Speciality getLecturer(String url) throws IOException{
-		Speciality lect=getAnything(url.replace(" ",""),lectWeekPattern);
-		lect.lecturer=true;
-		return lect;
-	}
-	
-	public static Speciality getAuditory(String url) throws IOException{
-		Speciality aud=getAnything(url,audWeekPattern);
-		aud.auditory=true;
-		return aud;
 	}
 	
 	public boolean isEven(){
@@ -145,12 +117,6 @@ public class Speciality implements Parcelable,JSONConvertable{
 		if(changeEven)even=!even;
 		
 		return even;
-	}
-	public boolean isLecturer(){
-		return lecturer;
-	}
-	public boolean isAuditory(){
-		return auditory;
 	}
 	public String getName(){
 		return name;
@@ -187,8 +153,6 @@ public class Speciality implements Parcelable,JSONConvertable{
 		try {
 			obj.put("name",name);
 			obj.put("url",url);
-			obj.put("isLecturer",lecturer);
-			obj.put("isAuditory",auditory);
 			obj.put("changeEven",changeEven);
 			
 			JSONArray evenArr=new JSONArray();
@@ -217,8 +181,6 @@ public class Speciality implements Parcelable,JSONConvertable{
 			spec.nevenDays=new Day[6];
 			spec.name=obj.getString("name");
 			spec.url=obj.getString("url");
-			spec.lecturer=obj.getBoolean("isLecturer");
-			spec.auditory=obj.getBoolean("isAuditory");
 			spec.changeEven=obj.getBoolean("changeEven");
 			
 			JSONArray evenArr=obj.getJSONArray("evenDays");
@@ -278,7 +240,7 @@ public class Speciality implements Parcelable,JSONConvertable{
 	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeString(name);
 		dest.writeString(url);
-		byte fl=(byte)((lecturer?1:0)+(auditory?2:0)+(changeEven?4:0));
+		byte fl=(byte)(changeEven?1:0);
 		dest.writeByte(fl);
 		dest.writeTypedArray(nevenDays,flags);
 		dest.writeTypedArray(evenDays,flags);
