@@ -60,7 +60,8 @@ public class Speciality implements Parcelable,JSONConvertable{
 						lect=cellmatcher.group(3);
 					}else{
 						aud=cellmatcher.group(2);
-						subj=cellmatcher.group(3)+" "+cellmatcher.group(5);
+						String type=cellmatcher.group(5);
+						subj=cellmatcher.group(3)+(type==null?"":" "+type);
 						lect=cellmatcher.group(7);
 					}
 					if(aud==null)aud="";

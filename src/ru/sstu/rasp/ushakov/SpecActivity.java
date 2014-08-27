@@ -16,6 +16,7 @@ public class SpecActivity extends ListActivity {
 	private Faculty fac;
 	private Handler handler;
 	private Thread thread;
+	private String title;
 	@SuppressLint("HandlerLeak")
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -23,6 +24,8 @@ public class SpecActivity extends ListActivity {
 		Bundle state;
 		if(savedInstanceState!=null)state=savedInstanceState;
 		else state=getIntent().getExtras();
+		title=state.getString("title");
+		if(title!=null)setTitle(title);
 		fac=Faculty.restoreFromBundle(state.getBundle("faculty"));
 		
 		handler=new Handler(){
@@ -77,7 +80,12 @@ public class SpecActivity extends ListActivity {
 		startActivity(intent);
 	}
 	protected void onSaveInstanceState(Bundle state){
-		if(fac!=null)fac.putToBundle(state);
+		if(fac!=null){
+			Bundle bundle=new Bundle();
+			fac.putToBundle(bundle);
+			state.putBundle("faculty",bundle);
+		}
+		if(title!=null)state.putString("title",title);
 	}
 	protected void onStop(){
 		super.onStop();

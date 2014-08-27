@@ -64,9 +64,14 @@ public class FacultyActivity extends ListActivity {
 	
 	protected void onListItemClick(ListView listv,View view,int pos,long id){
 		Intent intent=new Intent(this,SpecActivity.class);
-		Bundle faculty=new Bundle();
-		FacultyList.getFaculty(pos).putToBundle(faculty);
-		intent.putExtra("faculty",faculty);
+		Bundle facultyb=new Bundle();
+		Faculty faculty=FacultyList.getFaculty(pos);
+		faculty.putToBundle(facultyb);
+		intent.putExtra("faculty",facultyb);
+
+		if(faculty instanceof LazyTeacher)intent.putExtra("title",getString(R.string.lecturers));
+		if(faculty instanceof LazyAuditory)intent.putExtra("title",getString(R.string.auds));
+		
 		startActivity(intent);
 	}
 	@Override
