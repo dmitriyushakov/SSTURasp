@@ -15,6 +15,7 @@ public class SpecActivity extends ListActivity {
 	ArrayAdapter<String> adapter;
 	private Faculty fac;
 	private Handler handler;
+	private Thread thread;
 	@SuppressLint("HandlerLeak")
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -45,15 +46,16 @@ public class SpecActivity extends ListActivity {
 			public void run(){
 				try {
 					fac.syncInit();
-					handler.sendEmptyMessage(0);
+					if(!Thread.interrupted())handler.sendEmptyMessage(0);
 				}catch (IOException e) {
 					e.printStackTrace();
-					handler.sendEmptyMessage(1);
+					if(!Thread.interrupted())handler.sendEmptyMessage(1);
 				}
 			}
 		};
 		
-		new Thread(runnable).start();
+		thread=new Thread(runnable);
+		thread.start();
 	}
 	
 	private void onInit(){
@@ -76,5 +78,9 @@ public class SpecActivity extends ListActivity {
 	}
 	protected void onSaveInstanceState(Bundle state){
 		if(fac!=null)fac.putToBundle(state);
+	}
+	protected void onStop(){
+		super.onStop();
+		thread.interrupt();
 	}
 }

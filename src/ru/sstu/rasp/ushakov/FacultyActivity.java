@@ -13,6 +13,7 @@ import sstuclient.*;
 public class FacultyActivity extends ListActivity {
 	private ArrayAdapter<String> adapter;
 	private Handler handler;
+	private Thread thread;
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
@@ -41,12 +42,14 @@ public class FacultyActivity extends ListActivity {
 					error=true;
 					e.printStackTrace();
 				}
+				if(Thread.interrupted())return;
 				if(!error){
 					handler.sendEmptyMessage(0);
 				}else handler.sendEmptyMessage(1);
 			}
 		};
-		new Thread(runnable).start();
+		thread=new Thread(runnable);
+		thread.start();
 	}
 	
 	private void onInit(){
@@ -65,5 +68,10 @@ public class FacultyActivity extends ListActivity {
 		FacultyList.getFaculty(pos).putToBundle(faculty);
 		intent.putExtra("faculty",faculty);
 		startActivity(intent);
+	}
+	@Override
+	protected void onStop(){
+		super.onStop();
+		thread.interrupt();
 	}
 }

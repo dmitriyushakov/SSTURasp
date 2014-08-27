@@ -57,7 +57,7 @@ public class FacultyList {
 			list.add(new LazyAuditory(cont.getString(R.string.auds)));
 		}
 	}
-	public static void syncInit(Context cont) throws MalformedURLException, IOException{
+	public static synchronized void syncInit(Context cont) throws MalformedURLException, IOException{
 		if(instance==null)instance=new FacultyList();
 		instance.initLazyFaculties(cont);
 	}

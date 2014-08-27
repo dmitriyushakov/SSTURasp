@@ -12,7 +12,7 @@ public class LazyTeacher extends LazyFaculty{
 		this.name=name;
 	}
 	@Override
-	public void syncInit() throws MalformedURLException, IOException {
+	public synchronized void syncInit() throws MalformedURLException, IOException {
 		String content=HttpGetter.get("http://rasp.sstu.ru/teacher");
 		
 		Pattern linkPattern=Pattern.compile("<a href=\"([^\"]*)\">([^<]*)</a>");

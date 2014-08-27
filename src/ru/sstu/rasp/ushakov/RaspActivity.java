@@ -22,7 +22,7 @@ public class RaspActivity extends Activity {
 	RaspView view;
 	private void gotoFacultySelector(){
 		Intent i=new Intent(this,FacultyActivity.class);
-		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
 		Log.i("RaspActivity", "Try to start Faculty Activity");
 		startActivity(i);
 	}
