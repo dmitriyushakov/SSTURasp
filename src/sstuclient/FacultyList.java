@@ -5,8 +5,12 @@ import java.net.MalformedURLException;
 import java.util.*;
 import java.util.regex.*;
 
+import ru.sstu.rasp.ushakov.R;
+import android.content.Context;
+
 public class FacultyList {
 	private List<Faculty> list;
+	private boolean hasLazy=false;
 	private FacultyList() throws MalformedURLException, IOException{
 		list=new ArrayList<Faculty>();
 		
@@ -33,7 +37,7 @@ public class FacultyList {
 			SpecialityTag arr[]=new SpecialityTag[specs.size()];
 			for(int j=0;j<specs.size();j++)arr[j]=specs.get(j);
 			
-			Faculty faculty=new Faculty(name,arr);
+			Faculty faculty=Faculty.getFaculty(name,arr);
 			list.add(faculty);
 		}
 	}
@@ -46,8 +50,16 @@ public class FacultyList {
 		}
 		return instance;
 	}
-	public static void syncInit() throws MalformedURLException, IOException{
+	private void initLazyFaculties(Context cont){
+		if(!hasLazy&&cont!=null){
+			hasLazy=true;
+			list.add(new LazyTeacher(cont.getString(R.string.lecturers)));
+			list.add(new LazyAuditory(cont.getString(R.string.auds)));
+		}
+	}
+	public static void syncInit(Context cont) throws MalformedURLException, IOException{
 		if(instance==null)instance=new FacultyList();
+		instance.initLazyFaculties(cont);
 	}
 	public static int size(){
 		return getInstance().list.size();

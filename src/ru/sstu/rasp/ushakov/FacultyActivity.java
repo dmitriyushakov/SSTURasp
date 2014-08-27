@@ -1,7 +1,6 @@
 package ru.sstu.rasp.ushakov;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 
 import android.os.*;
 import android.view.*;
@@ -37,7 +36,7 @@ public class FacultyActivity extends ListActivity {
 			public void run(){
 				boolean error=false;
 				try {
-					FacultyList.syncInit();
+					FacultyList.syncInit(getApplicationContext());
 				} catch (IOException e) {
 					error=true;
 					e.printStackTrace();
@@ -51,12 +50,9 @@ public class FacultyActivity extends ListActivity {
 	}
 	
 	private void onInit(){
-		String lines[]=new String[FacultyList.size()+2];
+		String lines[]=new String[FacultyList.size()];
 		for(int i=0;i<FacultyList.size();i++)
 			lines[i]=FacultyList.getFaculty(i).getName();
-		
-		lines[lines.length-2]=getResources().getString(R.string.lecturers);
-		lines[lines.length-1]=getResources().getString(R.string.auds);
 		
 		adapter=new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,lines);
 		

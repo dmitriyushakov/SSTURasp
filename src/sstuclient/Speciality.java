@@ -12,6 +12,7 @@ import org.json.*;
 public class Speciality implements Parcelable,JSONConvertable{
 	private static final String SAVE_FILE="sstu_save.json";
 	private static final String stdWeekPattern="<div class=\"small\">(<div class=\"aud\">([^<]*)</div>)?<div class=\"subject-?m?\">([^<]*)(</div><div class=\"type\">([^<]*)</div><div class=\"(teacher|group)\">([^<]*)</div></div>)?";
+	private static final String audWeekPattern="<div class=\"small\"><div class=\"subject\">([^<]*)</div><div class=\"type\">([^<]*)</div><div class=\"teacher\">([^<]*)</div><div class=\"group\">([^<]*)</div></div>";
 	private String url;
 	private boolean changeEven;
 	private Day nevenDays[];
@@ -20,7 +21,7 @@ public class Speciality implements Parcelable,JSONConvertable{
 	
 	private Speciality(){};
 	
-	private static Day[] getWeek(String content,boolean even){
+	private static Day[] getWeek(String content,boolean even,boolean isAuditory){
 		Day[] days=new Day[6];
 		for(int i=0;i<6;i++){
 			days[i]=new Day(i,even);
@@ -46,13 +47,22 @@ public class Speciality implements Parcelable,JSONConvertable{
 				timematcher.find();
 				Time endtime=Time.parse(timematcher.group(1));
 				
-				Pattern cellpattern=Pattern.compile(stdWeekPattern);
+				Pattern cellpattern=Pattern.compile(isAuditory?audWeekPattern:stdWeekPattern);
 				Matcher cellmatcher=cellpattern.matcher(cell);
 				
 				if(cellmatcher.find()){
-					String aud=cellmatcher.group(2);
-					String subj=cellmatcher.group(3)+" "+cellmatcher.group(5);
-					String lect=cellmatcher.group(7);
+					String aud=null;
+					String subj=null;
+					String lect=null;
+					if(isAuditory){
+						aud=cellmatcher.group(4);
+						subj=cellmatcher.group(1)+" "+cellmatcher.group(2);
+						lect=cellmatcher.group(3);
+					}else{
+						aud=cellmatcher.group(2);
+						subj=cellmatcher.group(3)+" "+cellmatcher.group(5);
+						lect=cellmatcher.group(7);
+					}
 					if(aud==null)aud="";
 					if(lect==null)lect="";
 					
@@ -101,12 +111,13 @@ public class Speciality implements Parcelable,JSONConvertable{
 		
 		String strs[]=content.split("<span class=\"week_number\">2</span>");
 		
+		boolean isAud=url.indexOf("http://rasp.sstu.ru/aud/")==0;
 		if(siteEven){
-			spec.nevenDays=getWeek(strs[0],false);
-			spec.evenDays=getWeek(strs[1],true);
+			spec.nevenDays=getWeek(strs[0],false,isAud);
+			spec.evenDays=getWeek(strs[1],true,isAud);
 		}else{
-			spec.evenDays=getWeek(strs[0],false);
-			spec.nevenDays=getWeek(strs[1],true);
+			spec.evenDays=getWeek(strs[0],false,isAud);
+			spec.nevenDays=getWeek(strs[1],true,isAud);
 		}
 		
 		return spec;
