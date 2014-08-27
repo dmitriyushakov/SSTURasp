@@ -99,9 +99,6 @@ public class Speciality implements Parcelable,JSONConvertable{
 		String name=content.substring(content.indexOf("<title>")+7, content.indexOf("</title>"));
 		name=name.trim();
 		
-		boolean siteEven=content.indexOf("nechet")==-1;
-		spec.changeEven=(siteEven!=evenWeek());
-		
 		// Calendars different. Foreign calendar begining from sunday. Our from monday.
 		if((new GregorianCalendar()).get(Calendar.DAY_OF_WEEK)==Calendar.SUNDAY)
 			spec.changeEven=!spec.changeEven;
@@ -110,14 +107,17 @@ public class Speciality implements Parcelable,JSONConvertable{
 		spec.url=url;
 		
 		String strs[]=content.split("<span class=\"week_number\">2</span>");
+
+		boolean siteEven=strs[0].indexOf("nechet")==-1;
+		spec.changeEven=(siteEven!=evenWeek());
 		
 		boolean isAud=url.indexOf("http://rasp.sstu.ru/aud/")==0;
 		if(siteEven){
 			spec.nevenDays=getWeek(strs[0],false,isAud);
 			spec.evenDays=getWeek(strs[1],true,isAud);
 		}else{
-			spec.evenDays=getWeek(strs[0],false,isAud);
-			spec.nevenDays=getWeek(strs[1],true,isAud);
+			spec.nevenDays=getWeek(strs[1],false,isAud);
+			spec.evenDays=getWeek(strs[0],true,isAud);
 		}
 		
 		return spec;
