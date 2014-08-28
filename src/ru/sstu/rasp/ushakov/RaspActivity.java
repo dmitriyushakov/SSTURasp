@@ -1,10 +1,10 @@
 package ru.sstu.rasp.ushakov;
 
 import java.io.IOException;
+import java.util.*;
 
 import sstuclient.*;
 import android.os.*;
-import android.util.Log;
 import android.view.*;
 import android.view.ContextMenu.*;
 import android.annotation.SuppressLint;
@@ -18,12 +18,12 @@ public class RaspActivity extends Activity {
 	private Handler updhandler;
 	private boolean menusave;
 	private Thread t;
+	private Thread redrawThread;
 	private boolean _showfail;
 	RaspView view;
 	private void gotoFacultySelector(){
 		Intent i=new Intent(this,FacultyActivity.class);
 		i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
-		Log.i("RaspActivity", "Try to start Faculty Activity");
 		startActivity(i);
 	}
 	@SuppressLint("HandlerLeak")
@@ -82,19 +82,46 @@ public class RaspActivity extends Activity {
 			gotoFacultySelector();
 		}
 	}
+	@Override
+	protected void onStart(){
+		super.onStart();
+		
+		Runnable redrawRunnable=new Runnable(){
+			public void run(){
+				Calendar cal;
+				while(true){
+					cal=Calendar.getInstance();
+					int timeSleep=60000-cal.get(Calendar.SECOND)*1000-cal.get(Calendar.MILLISECOND);
+					try {
+						Thread.sleep(timeSleep);
+					} catch (InterruptedException e) {
+						break;
+					}
+					if(view!=null)view.postRedraw();
+				}
+			}
+		};
+		redrawThread=new Thread(redrawRunnable);
+		redrawThread.start();
+		if(view!=null)view.postRedraw();
+	}
+	@Override
 	public void onCreateContextMenu(ContextMenu menu,View v,ContextMenuInfo inf){
 		super.onCreateContextMenu(menu,v,inf);
 		MenuInflater inflanter=getMenuInflater();
 		inflanter.inflate(menusave?R.menu.rasp_save:R.menu.rasp,menu);
 	}
+	@Override
 	public boolean onContextItemSelected(MenuItem item){
 		return onOptionsItemSelected(item);
 	}
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu){
 		MenuInflater inflanter=getMenuInflater();
 		inflanter.inflate(menusave?R.menu.rasp_save:R.menu.rasp,menu);
 		return true;
 	}
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item){
 		switch(item.getItemId()){
 		case R.id.other:
@@ -169,7 +196,7 @@ public class RaspActivity extends Activity {
 		view.postInit();
 		menusave=false;
 	}
-	
+	@Override
 	protected void onSaveInstanceState(Bundle state){
 		if(spec!=null)state.putParcelable("spec",spec);
 		if(view!=null)view.saveInstance(state);
@@ -187,9 +214,15 @@ public class RaspActivity extends Activity {
 			view.invalidate();
 		}
 	}
+	@Override
 	protected void onStop(){
 		super.onStop();
+		if(redrawThread!=null){
+			redrawThread.interrupt();
+			redrawThread=null;
+		}
 	}
+	@Override
 	protected void onDestroy(){
 		super.onDestroy();
 		if(t!=null&&t.isAlive())t.interrupt();

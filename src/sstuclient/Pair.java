@@ -27,7 +27,23 @@ public class Pair implements Parcelable,JSONConvertable{
 		start=new Time(parcel);
 		end=new Time(parcel);
 	}
-	
+	public boolean isBefore(Time time){
+		return start.isLater(time);
+	}
+	public boolean isAfter(Time time){
+		return time.isLater(end);
+	}
+	public boolean isInside(Time time){
+		return !isBefore(time)&&!isAfter(time);
+	}
+	public float partOfTime(Time time){
+		if(isInside(time)){
+			int end=this.end.getHour()*60+this.end.getMinute();
+			int start=this.start.getHour()*60+this.start.getMinute();
+			int now=time.getHour()*60+time.getMinute();
+			return ((float)(now-start))/(end-start);
+		}else return 0;
+	}
 	public String getAuditorium(){
 		return auditorium;
 	}

@@ -30,6 +30,12 @@ public class Time implements Parcelable, JSONConvertable{
 		int minute=Integer.parseInt(vals[1]);
 		return new Time(hour,minute);
 	}
+	public int getHour(){
+		return hour;
+	}
+	public int getMinute(){
+		return minute;
+	}
 	public boolean isLater(Time other){
 		return other.hour<hour||other.hour==hour&&other.minute<minute;
 	}

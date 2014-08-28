@@ -7,8 +7,6 @@ import android.graphics.*;
 import android.os.*;
 import android.view.*;
 
-import android.util.Log;
-
 import java.util.*;
 
 public class RaspView extends View{
@@ -73,16 +71,26 @@ public class RaspView extends View{
 	private void drawBitmap(Day day,Canvas canv){
 		drawBitmap(day,null,canv);
 	}
+	private Path getWaitingPolygon(float x,float y,float height){
+		Path path=new Path();
+		path.moveTo(x,y);
+		path.lineTo(x+6,y);
+		path.lineTo(x+20,y+height/2);
+		path.lineTo(x+6,y+height);
+		path.lineTo(x,y+height);
+		path.lineTo(x,y);
+		return path;
+	}
 	private void drawBitmap(Day day,Bitmap bmp,Canvas canv){
 		if(bmp!=null){
 			canv=new Canvas(bmp);
 		}
 		Paint paint=new Paint();
-		
 		paint.setAntiAlias(true);
 		paint.setColor(0xFFFFFFFF);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setTextSize(20);
+		
 		canv.drawRect(0,0,getWidth(),getHeight(),paint);
 		
 		String dayName=getDayName(day.dayOfWeek());
@@ -117,17 +125,35 @@ public class RaspView extends View{
 		greyPaint.setColor(0xFF888888);
 		greyPaint.setStyle(Paint.Style.FILL);
 		greyPaint.setStrokeWidth(2);
+		
+		Paint lightGreyPaint=new Paint();
+		lightGreyPaint.setAntiAlias(true);
+		lightGreyPaint.setColor(0xFFDDDDDD);
+		lightGreyPaint.setStyle(Paint.Style.FILL);
+		lightGreyPaint.setStrokeWidth(2);
+		
 		int startItems=(int)paint.getTextSize()+8;
 		int itemHeight=(getHeight()-startItems)/8;
 		if(itemHeight>60)itemHeight=60;
 		int timeSize=(itemHeight-12)/3;
 		int topSize=(itemHeight-12)/2;
 		int bottomSize=(itemHeight-12)/3;
+		Time now=Time.now();
 		for(int i=0;i<day.size();i++){
 			Pair pair=day.at(i);
 
 			int itemStart=startItems+itemHeight*i;
 			
+			if(day.isToday(spec.isEven())){
+				if(pair.isInside(now)){
+					canv.drawRect(0,itemStart,getWidth()*pair.partOfTime(now),itemStart+itemHeight,lightGreyPaint);
+				}else if(pair.isBefore(now)){
+					boolean allow=true;
+					if(i!=0&&!day.at(i-1).isAfter(now))allow=false;
+					if(allow)canv.drawPath(getWaitingPolygon(0,itemStart,itemHeight),lightGreyPaint);
+				}
+			}
+
 			paint.setTextSize(timeSize);
 			String startTime=pair.getStart().toString();
 			String endTime=pair.getEnd().toString();
@@ -159,7 +185,7 @@ public class RaspView extends View{
 			canv.drawText(pair.getLecturer(),4,itemStart+8+topSize+bottomSize,greyPaint);
 			canv.restore();
 			
-			int linePos=itemStart+12+topSize+bottomSize;
+			int linePos=itemStart+itemHeight;
 			canv.drawLine(0,linePos,getWidth(),linePos,greyPaint);
 		}
 	}
@@ -213,6 +239,7 @@ public class RaspView extends View{
 		drawed=false;
 		bmpContainer.setSize(getWidth(),getHeight());
 	}
+	@Override
 	protected void onSizeChanged(int w,int h,int ow,int oh){
 		postInit();
 	}
@@ -222,21 +249,29 @@ public class RaspView extends View{
 		
 		drawed=false;
 		menuhandl=new Handler(){
+			@Override
 			public void handleMessage(Message msg){
 				showContextMenu();
 			}
 		};
 		restored=false;
 		khandler=new Handler(){
+			@Override
 			public void handleMessage(Message msg){
-				long current=System.currentTimeMillis();
-				float dt=((float)(current-kprev))/1000;
-				if(Math.abs(dt)>0.1)dt=(float)0.1;
-				kprev=current;
-				tick(dt);
+				if(msg.what==0){
+					long current=System.currentTimeMillis();
+					float dt=((float)(current-kprev))/1000;
+					if(Math.abs(dt)>0.1)dt=(float)0.1;
+					kprev=current;
+					tick(dt);
+				}else if(msg.what==1){
+					bmpContainer.clean();
+					invalidate();
+				}
 			}
 		};
 		krunnable=new Runnable(){
+			@Override
 			public void run(){
 				kprev=System.currentTimeMillis();
 				while(true){
@@ -251,6 +286,7 @@ public class RaspView extends View{
 			}
 		};
 	}
+	@Override
 	public void onDraw(Canvas canv){
 		if(!drawed){
 			Day day=spec.getDay(xpos/getWidth(),ypos!=0);
@@ -294,6 +330,7 @@ public class RaspView extends View{
 		ypos=y;
 		invalidate();
 	}
+	@Override
 	public boolean onTouchEvent(MotionEvent motion){
 		if(!isTouched){
 			if(motion.getAction()==MotionEvent.ACTION_DOWN){
@@ -427,5 +464,8 @@ public class RaspView extends View{
 			}
 			setPos(startx,(int)(starty-kdy));
 		}
+	}
+	public void postRedraw(){
+		if(khandler!=null)khandler.sendEmptyMessage(1);
 	}
 }
