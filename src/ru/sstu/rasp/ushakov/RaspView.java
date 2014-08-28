@@ -71,7 +71,6 @@ public class RaspView extends View{
 		drawBitmap(day,bmp,null);
 	}
 	private void drawBitmap(Day day,Canvas canv){
-		Log.i("RaspView","Draw on canvas directly");
 		drawBitmap(day,null,canv);
 	}
 	private void drawBitmap(Day day,Bitmap bmp,Canvas canv){
@@ -148,7 +147,7 @@ public class RaspView extends View{
 			if(box.width()>audWidth)audWidth=box.width();
 			
 			canv.save();
-			box.set(audWidth+40,0,getWidth()-8-audWidth,getHeight());
+			box.set(audWidth+40,0,getWidth()-8-timeWidth,getHeight());
 			canv.clipRect(box);
 			canv.drawText(pair.getSubject(),audWidth+40,itemStart+4+topSize,paint);
 			canv.restore();

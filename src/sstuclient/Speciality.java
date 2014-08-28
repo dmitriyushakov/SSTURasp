@@ -11,7 +11,7 @@ import org.json.*;
 
 public class Speciality implements Parcelable,JSONConvertable{
 	private static final String SAVE_FILE="sstu_save.json";
-	private static final String stdWeekPattern="<div class=\"small\">(<div class=\"aud\">([^<]*)</div>)?<div class=\"subject-?m?\">([^<]*)(</div><div class=\"type\">([^<]*)</div><div class=\"(teacher|group)\">([^<]*)</div></div>)?";
+	private static final String stdWeekPattern="<div class=\"small\">(<div class=\"aud\">([^<]*)</div>)?<div class=\"subject-?m?\">([^<]*)(</div><div| <span) class=\"type\">([^<]*)</(div|span)>(<div class=\"(teacher|group)\">([^<]*)</div></div>)?";
 	private static final String audWeekPattern="<div class=\"small\"><div class=\"subject\">([^<]*)</div><div class=\"type\">([^<]*)</div><div class=\"teacher\">([^<]*)</div><div class=\"group\">([^<]*)</div></div>";
 	private String url;
 	private boolean changeEven;
@@ -62,7 +62,7 @@ public class Speciality implements Parcelable,JSONConvertable{
 						aud=cellmatcher.group(2);
 						String type=cellmatcher.group(5);
 						subj=cellmatcher.group(3)+(type==null?"":" "+type);
-						lect=cellmatcher.group(7);
+						lect=cellmatcher.group(9);
 					}
 					if(aud==null)aud="";
 					if(lect==null)lect="";
@@ -114,11 +114,11 @@ public class Speciality implements Parcelable,JSONConvertable{
 		
 		boolean isAud=url.indexOf("http://rasp.sstu.ru/aud/")==0;
 		if(siteEven){
-			spec.nevenDays=getWeek(strs[0],false,isAud);
-			spec.evenDays=getWeek(strs[1],true,isAud);
-		}else{
 			spec.nevenDays=getWeek(strs[1],false,isAud);
 			spec.evenDays=getWeek(strs[0],true,isAud);
+		}else{
+			spec.nevenDays=getWeek(strs[0],false,isAud);
+			spec.evenDays=getWeek(strs[1],true,isAud);
 		}
 		
 		return spec;
