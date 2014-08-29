@@ -21,15 +21,7 @@ public class FacultyActivity extends ListActivity {
 			@Override
 			public void handleMessage(Message msg){
 				if(msg.what==0)onInit();
-				else{
-					OnClickListener listener=new OnClickListener(){
-						@Override
-						public void onClick(DialogInterface arg0, int arg1) {
-							finish();
-						}
-					};
-					ErrorDialog.internetFailDialog(getBaseContext(),listener);
-				}
+				else showFailDialog();
 			}
 		};
 		Runnable runnable=new Runnable(){
@@ -51,7 +43,15 @@ public class FacultyActivity extends ListActivity {
 		thread=new Thread(runnable);
 		thread.start();
 	}
-	
+	private void showFailDialog(){
+		OnClickListener listener=new OnClickListener(){
+			@Override
+			public void onClick(DialogInterface arg0, int arg1) {
+				finish();
+			}
+		};
+		ErrorDialog.internetFailDialog(this,listener).show();
+	}
 	private void onInit(){
 		String lines[]=new String[FacultyList.size()];
 		for(int i=0;i<FacultyList.size();i++)

@@ -32,15 +32,7 @@ public class SpecActivity extends ListActivity {
 			@Override
 			public void handleMessage(Message msg){
 				if(msg.what==0)onInit();
-				else{
-					OnClickListener listener=new OnClickListener(){
-						@Override
-						public void onClick(DialogInterface arg0, int arg1) {
-							finish();
-						}
-					};
-					ErrorDialog.internetFailDialog(getBaseContext(),listener);
-				}
+				else showFailDialog();
 			}
 		};
 		
@@ -60,7 +52,15 @@ public class SpecActivity extends ListActivity {
 		thread=new Thread(runnable);
 		thread.start();
 	}
-	
+	private void showFailDialog(){
+		OnClickListener listener=new OnClickListener(){
+			@Override
+			public void onClick(DialogInterface arg0, int arg1) {
+				finish();
+			}
+		};
+		ErrorDialog.internetFailDialog(this,listener).show();
+	}
 	private void onInit(){
 		String specList[]=new String[fac.size()];
 		
