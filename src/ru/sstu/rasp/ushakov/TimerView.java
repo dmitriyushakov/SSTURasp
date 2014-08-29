@@ -31,7 +31,6 @@ public class TimerView extends View{
 		@Override
 		public void handleMessage(Message msg){
 			if(msg.what==0){
-				System.out.println("Would set");
 				decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 			}
 		}
@@ -39,14 +38,11 @@ public class TimerView extends View{
 	private Runnable hideRunnable=new Runnable(){
 		@Override
 		public void run(){
-			System.out.println("Thread started");
 			try {
 				Thread.sleep(3000);
 			} catch (InterruptedException e) {
-				System.out.println("Interrupted");
 				return;
 			}
-			System.out.println("Would send");
 			hideHandler.sendEmptyMessage(0);
 		}
 	};
@@ -186,6 +182,12 @@ public class TimerView extends View{
 	}
 	@Override
 	public void onSizeChanged(int w,int h,int ow,int oh){
+		try {
+			View.class.getMethod("setSystemUiVisibility",int.class);
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+			return;
+		}
 		if(w<ow&&h==oh||h<oh&&w==ow){
 			if(hideThread!=null&&!hideThread.isInterrupted()){
 				hideThread.interrupt();

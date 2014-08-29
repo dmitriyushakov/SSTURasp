@@ -33,7 +33,12 @@ public class TimerActivity extends Activity{
 		super.onCreate(savedInstanceState);
 		
 		View decorView=getWindow().getDecorView();
-		decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+		try {
+			View.class.getMethod("setSystemUiVisibility",int.class);
+			decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		}
 		
 		Day day=(Day)getIntent().getExtras().getParcelable("day");
 		view=new TimerView(this,day,decorView);
@@ -42,7 +47,12 @@ public class TimerActivity extends Activity{
 		Window win=getWindow();
 		win.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		WindowManager.LayoutParams lay=win.getAttributes();
-		lay.buttonBrightness=WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_OFF;
+		try {
+			WindowManager.LayoutParams.class.getField("buttonBrightness");
+			lay.buttonBrightness=WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_OFF;
+		} catch (NoSuchFieldException e) {
+			e.printStackTrace();
+		}
 		lay.screenBrightness=0.03f;
 		win.setAttributes(lay);
 	}
