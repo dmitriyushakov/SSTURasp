@@ -13,6 +13,7 @@
     <string name="menu_save_title">Сохранить</string>
     <string name="menu_other_title">Другое расписание</string>
     <string name="menu_update_title">Обновить</string>
+    <string name="menu_timer_title">Заставка</string>
     <string name="menu_about_title">О программе</string>
     <string name="about_author">Автор: Ушаков Дмитрий</string>
     <string name="about_version">Версия: 2.0</string>
@@ -25,5 +26,6 @@
     <string name="auds">Аудитории</string>
     <string name="tomorrow_day">(завтра)</string>
     <string name="today_day">(сегодня)</string>
+    <string name="no_pairs">Сегодня пар больше нет.</string>
 
 </resources>

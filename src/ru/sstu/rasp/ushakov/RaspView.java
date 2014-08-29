@@ -465,6 +465,9 @@ public class RaspView extends View{
 			setPos(startx,(int)(starty-kdy));
 		}
 	}
+	public Day getCurrentDay(){
+		return spec.getDay(dayOfWeek(),spec.isEven());
+	}
 	public void postRedraw(){
 		if(khandler!=null)khandler.sendEmptyMessage(1);
 	}

@@ -95,4 +95,9 @@ public class Time implements Parcelable, JSONConvertable{
 		}
 		return null;
 	}
+	public int different(Time other){
+		int value=hour*60+minute-(other.hour*60+other.minute);
+		if(value<0)value=-value;
+		return value;
+	}
 }

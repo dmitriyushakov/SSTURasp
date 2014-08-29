@@ -139,6 +139,9 @@ public class RaspActivity extends Activity {
 		case R.id.gotohome:
 			gotoHome();
 			return true;
+		case R.id.timer:
+			showTimer();
+			return true;
 		default:
 			return false;
 		}
@@ -185,6 +188,11 @@ public class RaspActivity extends Activity {
 		};
 		t=new Thread(runnable);
 		t.start();
+	}
+	public void showTimer(){
+		Intent intent=new Intent(this,TimerActivity.class);
+		intent.putExtra("day",view.getCurrentDay());
+		startActivity(intent);
 	}
 	public void showAbout(){
 		Intent intent=new Intent(this,AboutActivity.class);
