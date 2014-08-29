@@ -146,7 +146,9 @@ public class RaspView extends View{
 			
 			if(day.isToday(spec.isEven())){
 				if(pair.isInside(now)){
-					canv.drawRect(0,itemStart,getWidth()*pair.partOfTime(now),itemStart+itemHeight,lightGreyPaint);
+					float lineWidth=getWidth()*pair.partOfTime(now);
+					if(lineWidth<5)lineWidth=5;
+					canv.drawRect(0,itemStart,lineWidth,itemStart+itemHeight,lightGreyPaint);
 				}else if(pair.isBefore(now)){
 					boolean allow=true;
 					if(i!=0&&!day.at(i-1).isAfter(now))allow=false;
