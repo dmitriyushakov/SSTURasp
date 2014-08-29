@@ -27,6 +27,7 @@ public class LazyTeacher extends LazyFaculty{
 		
 		SpecialityTag arr[]=new SpecialityTag[tags.size()];
 		for(int i=0;i<arr.length;i++)arr[i]=tags.get(i);
+		Arrays.sort(arr);
 		
 		realFaculty=new UsualFaculty(name,arr);
 	}

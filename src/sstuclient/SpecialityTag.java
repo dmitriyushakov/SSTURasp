@@ -1,6 +1,6 @@
 package sstuclient;
 
-public class SpecialityTag {
+public class SpecialityTag implements Comparable{
 	private String name;
 	private String url;
 	public SpecialityTag(String n,String u){
@@ -12,5 +12,10 @@ public class SpecialityTag {
 	}
 	public String getUrl(){
 		return url;
+	}
+	@Override
+	public int compareTo(Object other) {
+		SpecialityTag othert=(SpecialityTag)other;
+		return name.compareTo(othert.name);
 	}
 }
