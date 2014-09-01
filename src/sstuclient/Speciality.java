@@ -31,7 +31,7 @@ public class Speciality implements Parcelable,JSONConvertable{
 		
 		for(int i=1;i<strings.length;i++){
 			String col=strings[i];
-			String cells[]=col.split("<div class=\"rasp-table-row  \">");
+			String cells[]=col.split("<div class=\"rasp-table-row ");
 			
 			for(int j=1;j<=cells.length-1;j++){
 				String cell=cells[j];
