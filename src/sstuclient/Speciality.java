@@ -107,18 +107,18 @@ public class Speciality implements Parcelable,JSONConvertable{
 		spec.name=name;
 		spec.url=url;
 		
-		String strs[]=content.split("<span class=\"week_number\">2</span>");
+		String strs[]=content.split("<span class=\"week_number\">");
 
 		boolean siteEven=strs[0].indexOf("nechet")==-1;
 		spec.changeEven=(siteEven!=evenWeek());
 		
 		boolean isAud=url.indexOf("http://rasp.sstu.ru/aud/")==0;
 		if(siteEven){
-			spec.nevenDays=getWeek(strs[1],false,isAud);
-			spec.evenDays=getWeek(strs[0],true,isAud);
-		}else{
-			spec.nevenDays=getWeek(strs[0],false,isAud);
+			spec.nevenDays=getWeek(strs[2],false,isAud);
 			spec.evenDays=getWeek(strs[1],true,isAud);
+		}else{
+			spec.nevenDays=getWeek(strs[1],false,isAud);
+			spec.evenDays=getWeek(strs[2],true,isAud);
 		}
 		
 		return spec;
